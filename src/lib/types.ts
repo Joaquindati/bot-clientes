@@ -4,6 +4,7 @@ export interface SocialLinks {
     linkedin?: string;
     twitter?: string;
     whatsapp_link?: string;
+    [key: string]: string | undefined;
 }
 
 export interface ScrapedData {

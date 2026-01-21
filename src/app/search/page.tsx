@@ -32,11 +32,12 @@ export default function SearchPage() {
         const formData = new FormData(e.currentTarget);
         const keyword = formData.get('keyword');
         const city = formData.get('city');
+        const apiKey = formData.get('apiKey');
 
         try {
             const res = await fetch('/api/search', {
                 method: 'POST',
-                body: JSON.stringify({ keyword, city }),
+                body: JSON.stringify({ keyword, city, apiKey }),
                 headers: { 'Content-Type': 'application/json' }
             });
             const data = await res.json();
@@ -49,9 +50,16 @@ export default function SearchPage() {
         }
     };
 
-    const handleSave = (result: SearchResult) => {
-        saveLead(result);
-        setSavedIds(prev => new Set([...prev, result.place_id]));
+    const handleSave = async (result: SearchResult) => {
+        try {
+            console.log('Saving lead:', result);
+            await saveLead(result);
+            setSavedIds(prev => new Set([...prev, result.place_id]));
+            console.log('Lead saved successfully');
+        } catch (error) {
+            console.error('Error saving lead', error);
+            alert('Error al guardar el lead. Revisa la consola para más detalles.');
+        }
     };
 
     return (
@@ -64,46 +72,63 @@ export default function SearchPage() {
             </div>
 
             <div className="rounded-xl border bg-white p-6 shadow-sm dark:bg-zinc-900 dark:border-zinc-800">
-                <form onSubmit={handleSearch} className="grid gap-6 md:grid-cols-7">
-                    <div className="md:col-span-3 space-y-2">
+                <form onSubmit={handleSearch} className="space-y-6">
+                    <div className="space-y-2">
                         <label className="text-sm font-medium leading-none">
-                            Palabra Clave (Rubro)
+                            Google Maps API Key (Opcional)
                         </label>
-                        <div className="relative">
-                            <Search className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
-                            <input
-                                name="keyword"
-                                className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 pl-9 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-600 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 dark:bg-zinc-800 dark:border-zinc-700"
-                                placeholder="Ej. Abogados, Pizzería, Dentista"
-                                required
-                            />
-                        </div>
+                        <input
+                            name="apiKey"
+                            type="password"
+                            className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-600 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 dark:bg-zinc-800 dark:border-zinc-700"
+                            placeholder="Pegar tu API Key aquí para búsqueda real"
+                        />
+                        <p className="text-xs text-muted-foreground text-gray-400">
+                            Si se deja vacío, se usará el modo Demo con datos de prueba.
+                        </p>
                     </div>
 
-                    <div className="md:col-span-3 space-y-2">
-                        <label className="text-sm font-medium leading-none">
-                            Ciudad / Ubicación
-                        </label>
-                        <div className="relative">
-                            <MapPin className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
-                            <input
-                                name="city"
-                                className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 pl-9 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-600 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 dark:bg-zinc-800 dark:border-zinc-700"
-                                placeholder="Ej. Santiago, Buenos Aires, Madrid"
-                                required
-                            />
+                    <div className="grid gap-6 md:grid-cols-7">
+                        <div className="md:col-span-3 space-y-2">
+                            <label className="text-sm font-medium leading-none">
+                                Palabra Clave (Rubro)
+                            </label>
+                            <div className="relative">
+                                <Search className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
+                                <input
+                                    name="keyword"
+                                    className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 pl-9 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-600 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 dark:bg-zinc-800 dark:border-zinc-700"
+                                    placeholder="Ej. Abogados, Pizzería, Dentista"
+                                    required
+                                />
+                            </div>
                         </div>
-                    </div>
 
-                    <div className="md:col-span-1 flex items-end">
-                        <button
-                            type="submit"
-                            disabled={loading}
-                            className="inline-flex h-10 w-full items-center justify-center rounded-md bg-blue-600 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-blue-700 focus-visible:outline-none disabled:pointer-events-none disabled:opacity-50"
-                        >
-                            {loading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Play className="mr-2 h-4 w-4" />}
-                            Buscar
-                        </button>
+                        <div className="md:col-span-3 space-y-2">
+                            <label className="text-sm font-medium leading-none">
+                                Ciudad / Ubicación
+                            </label>
+                            <div className="relative">
+                                <MapPin className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
+                                <input
+                                    name="city"
+                                    className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 pl-9 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-600 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 dark:bg-zinc-800 dark:border-zinc-700"
+                                    placeholder="Ej. Santiago, Buenos Aires, Madrid"
+                                    required
+                                />
+                            </div>
+                        </div>
+
+                        <div className="md:col-span-1 flex items-end">
+                            <button
+                                type="submit"
+                                disabled={loading}
+                                className="inline-flex h-10 w-full items-center justify-center rounded-md bg-blue-600 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-blue-700 focus-visible:outline-none disabled:pointer-events-none disabled:opacity-50"
+                            >
+                                {loading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Play className="mr-2 h-4 w-4" />}
+                                Buscar
+                            </button>
+                        </div>
                     </div>
                 </form>
             </div>
@@ -170,15 +195,40 @@ export default function SearchPage() {
                                     <div className="border-t pt-4 mt-auto dark:border-zinc-800">
                                         <div className="flex items-center justify-between">
                                             <div className="flex gap-2">
-                                                {result.socials.facebook && <Facebook className="h-4 w-4 text-blue-600" />}
-                                                {result.socials.instagram && <Instagram className="h-4 w-4 text-pink-600" />}
-                                                {result.socials.linkedin && <Linkedin className="h-4 w-4 text-blue-700" />}
+                                                {result.socials.facebook && (
+                                                    <a href={result.socials.facebook} target="_blank" rel="noopener noreferrer" className="hover:opacity-80 transition-opacity">
+                                                        <Facebook className="h-4 w-4 text-blue-600" />
+                                                    </a>
+                                                )}
+                                                {result.socials.instagram && (
+                                                    <a href={result.socials.instagram} target="_blank" rel="noopener noreferrer" className="hover:opacity-80 transition-opacity">
+                                                        <Instagram className="h-4 w-4 text-pink-600" />
+                                                    </a>
+                                                )}
+                                                {result.socials.linkedin && (
+                                                    <a href={result.socials.linkedin} target="_blank" rel="noopener noreferrer" className="hover:opacity-80 transition-opacity">
+                                                        <Linkedin className="h-4 w-4 text-blue-700" />
+                                                    </a>
+                                                )}
                                             </div>
 
                                             {result.emails.length > 0 ? (
-                                                <span className="inline-flex items-center rounded-full bg-green-50 px-2 py-1 text-xs font-medium text-green-700 ring-1 ring-inset ring-green-600/20 dark:bg-green-900/30 dark:text-green-400">
-                                                    {result.emails.length} Emails
-                                                </span>
+                                                <div className="flex gap-1">
+                                                    {result.emails.map((email, idx) => (
+                                                        <button
+                                                            key={idx}
+                                                            onClick={() => {
+                                                                navigator.clipboard.writeText(email);
+                                                                // Optional: Visual feedback could be added here
+                                                                alert(`Email copiado: ${email}`);
+                                                            }}
+                                                            className="inline-flex items-center rounded-full bg-green-50 px-2 py-1 text-xs font-medium text-green-700 ring-1 ring-inset ring-green-600/20 hover:bg-green-100 dark:bg-green-900/30 dark:text-green-400 cursor-pointer transition-colors"
+                                                            title="Clic para copiar"
+                                                        >
+                                                            {email}
+                                                        </button>
+                                                    ))}
+                                                </div>
                                             ) : (
                                                 <span className="inline-flex items-center rounded-full bg-gray-50 px-2 py-1 text-xs font-medium text-gray-600 ring-1 ring-inset ring-gray-500/10 dark:bg-gray-800 dark:text-gray-400">
                                                     Sin Emails

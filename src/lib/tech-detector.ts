@@ -1,5 +1,3 @@
-import { CheerioAPI } from 'cheerio';
-
 export function detectTechAndSeo(html: string, url: string): { tech_stack: string[], has_ssl: boolean } {
     const tech_stack: string[] = [];
     const lowerHtml = html.toLowerCase();

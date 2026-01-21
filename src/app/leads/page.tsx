@@ -1,28 +1,43 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { Download, Trash2, Mail, ExternalLink, MessageCircle } from 'lucide-react';
+import { Download, Trash2, Mail, ExternalLink, MessageCircle, Sparkles } from 'lucide-react';
 import { Lead, getLeads, deleteLead, updateLeadStatus } from '@/lib/storage';
 import { cn } from '@/lib/utils';
 import Link from 'next/link';
+
+import { PitchGenerator } from '@/components/PitchGenerator';
 
 export default function LeadsPage() {
     const [leads, setLeads] = useState<Lead[]>([]);
 
     useEffect(() => {
-        setLeads(getLeads());
+        const fetchLeads = async () => {
+            try {
+                const data = await getLeads();
+                setLeads(data);
+            } catch (error) {
+                console.error("Failed to load leads", error);
+            }
+        };
+        fetchLeads();
     }, []);
 
-    const handleDelete = (placeId: string) => {
+    const handleDelete = async (placeId: string) => {
         if (confirm('¿Estás seguro de que quieres eliminar este lead?')) {
-            deleteLead(placeId);
-            setLeads(getLeads());
+            await deleteLead(placeId);
+            const data = await getLeads();
+            setLeads(data);
         }
     };
 
-    const handleStatusChange = (placeId: string, status: Lead['status']) => {
-        updateLeadStatus(placeId, status);
-        setLeads(getLeads());
+    const [selectedLeadForPitch, setSelectedLeadForPitch] = useState<Lead | null>(null);
+
+    const handleStatusChange = async (placeId: string, status: Lead['status']) => {
+        await updateLeadStatus(placeId, status);
+        // Optimistic update or refetch
+        const data = await getLeads();
+        setLeads(data);
     };
 
     return (
@@ -67,8 +82,12 @@ export default function LeadsPage() {
                                 {leads.map((lead) => (
                                     <tr key={lead.place_id} className="group hover:bg-gray-50 dark:hover:bg-zinc-800/50">
                                         <td className="px-6 py-4">
-                                            <div className="font-medium text-gray-900 dark:text-gray-100">{lead.name}</div>
-                                            <div className="text-xs text-gray-500 truncate max-w-[200px]">{lead.address}</div>
+                                            <Link href={`/leads/${lead.place_id}`} className="block">
+                                                <div className="font-medium text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300 hover:underline">
+                                                    {lead.name}
+                                                </div>
+                                                <div className="text-xs text-gray-500 truncate max-w-[200px]">{lead.address}</div>
+                                            </Link>
                                         </td>
                                         <td className="px-6 py-4">
                                             <div className="flex flex-col gap-1">
@@ -84,9 +103,17 @@ export default function LeadsPage() {
                                             {lead.emails.length > 0 ? (
                                                 <div className="flex flex-col gap-1">
                                                     {lead.emails.map(email => (
-                                                        <span key={email} className="inline-flex items-center text-xs text-gray-600 dark:text-gray-400">
+                                                        <button
+                                                            key={email}
+                                                            onClick={() => {
+                                                                navigator.clipboard.writeText(email);
+                                                                alert(`Email copiado: ${email}`);
+                                                            }}
+                                                            className="inline-flex items-center text-xs text-gray-600 dark:text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
+                                                            title="Clic para copiar"
+                                                        >
                                                             <Mail className="mr-1 h-3 w-3" /> {email}
-                                                        </span>
+                                                        </button>
                                                     ))}
                                                 </div>
                                             ) : (
@@ -96,24 +123,31 @@ export default function LeadsPage() {
                                         <td className="px-6 py-4">
                                             <select
                                                 value={lead.status}
-                                                onChange={(e) => handleStatusChange(lead.place_id, e.target.value as any)}
+                                                onChange={(e) => handleStatusChange(lead.place_id, e.target.value as Lead['status'])}
                                                 className={cn(
                                                     "rounded-full px-2.5 py-0.5 text-xs font-medium border-0 ring-1 ring-inset outline-none cursor-pointer appearance-none pr-6",
-                                                    lead.status === 'new' && "bg-blue-50 text-blue-700 ring-blue-600/20",
-                                                    lead.status === 'contacted' && "bg-yellow-50 text-yellow-700 ring-yellow-600/20",
-                                                    lead.status === 'interested' && "bg-orange-50 text-orange-700 ring-orange-600/20",
-                                                    lead.status === 'client' && "bg-green-50 text-green-700 ring-green-600/20",
+                                                    lead.status === 'NEW' && "bg-blue-50 text-blue-700 ring-blue-600/20",
+                                                    lead.status === 'CONTACTED' && "bg-yellow-50 text-yellow-700 ring-yellow-600/20",
+                                                    lead.status === 'INTERESTED' && "bg-orange-50 text-orange-700 ring-orange-600/20",
+                                                    lead.status === 'CLIENT' && "bg-green-50 text-green-700 ring-green-600/20",
                                                 )}
                                                 style={{ backgroundImage: 'none' }}
                                             >
-                                                <option value="new">Nuevo</option>
-                                                <option value="contacted">Contactado</option>
-                                                <option value="interested">Interesado</option>
-                                                <option value="client">Cliente</option>
+                                                <option value="NEW">Nuevo</option>
+                                                <option value="CONTACTED">Contactado</option>
+                                                <option value="INTERESTED">Interesado</option>
+                                                <option value="CLIENT">Cliente</option>
                                             </select>
                                         </td>
                                         <td className="px-6 py-4 text-right">
                                             <div className="flex justify-end gap-2">
+                                                <button
+                                                    onClick={() => setSelectedLeadForPitch(lead)}
+                                                    className="p-2 text-gray-400 hover:text-yellow-600 hover:bg-yellow-50 rounded-md transition-colors"
+                                                    title="Generar Speech de Venta"
+                                                >
+                                                    <Sparkles className="h-4 w-4" />
+                                                </button>
                                                 <button className="p-2 text-gray-400 hover:text-green-600 hover:bg-green-50 rounded-md transition-colors" title="Enviar WhatsApp">
                                                     <MessageCircle className="h-4 w-4" />
                                                 </button>
@@ -132,6 +166,16 @@ export default function LeadsPage() {
                     </div>
                 )}
             </div>
+
+            {selectedLeadForPitch && (
+                <PitchGenerator
+                    isOpen={!!selectedLeadForPitch}
+                    onClose={() => setSelectedLeadForPitch(null)}
+                    leadName={selectedLeadForPitch.name}
+                    leadActivity={selectedLeadForPitch.keyword || 'Negocio'}
+                    leadCity={selectedLeadForPitch.city || 'Su Ciudad'}
+                />
+            )}
         </div>
     );
 }
