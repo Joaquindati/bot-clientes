@@ -3,11 +3,10 @@ import { Resend } from 'resend';
 import { render } from '@react-email/render';
 import CriticalAlertEmail from '@/emails/critical-alert-template';
 
-if (!process.env.RESEND_API_KEY) {
-    throw new Error('RESEND_API_KEY is not defined in environment variables');
-}
-
-const resend = new Resend(process.env.RESEND_API_KEY);
+// Initialize Resend lazily or check inside functions
+const resend = process.env.RESEND_API_KEY
+    ? new Resend(process.env.RESEND_API_KEY)
+    : null;
 
 export const emailConfig = {
     from: process.env.EMAIL_FROM || 'onboarding@resend.dev',
@@ -21,6 +20,11 @@ interface SendEmailParams {
 }
 
 export async function sendEmail({ to, subject, html }: SendEmailParams) {
+    if (!resend) {
+        console.warn('RESEND_API_KEY is not defined. Email sending is disabled.');
+        return { success: false, error: 'RESEND_API_KEY missing' };
+    }
+
     try {
         const data = await resend.emails.send({
             from: emailConfig.from,
