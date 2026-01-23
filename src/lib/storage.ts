@@ -8,8 +8,25 @@ export interface Lead {
     socials?: Record<string, string | undefined>;
     status: 'NEW' | 'CONTACTED' | 'INTERESTED' | 'CLIENT';
     notes: string | null;
+    description?: string | null;
     city?: string;
+    state?: string;
+    country?: string;
     keyword?: string;
+    lastContactDate?: string | null;
+    economyLevel?: number;
+    // Sales Intelligence
+    decisionMaker?: string | null;
+    decisionMakerRole?: string | null;
+    estimatedCloseDate?: string | null;
+    urgencyLevel?: string | null;
+    painPoints?: string | null;
+    leadSource?: string | null;
+    bestContactTime?: string | null;
+    preferredContactChannel?: string | null;
+    employeeCount?: string | null;
+    nextAction?: string | null;
+    nextActionDate?: string | null;
     createdAt?: string;
 }
 
@@ -24,6 +41,8 @@ export interface SearchResultLead {
     emails?: string[];
     socials?: Record<string, string | undefined>;
     city?: string;
+    state?: string;
+    country?: string;
     keyword?: string;
 }
 

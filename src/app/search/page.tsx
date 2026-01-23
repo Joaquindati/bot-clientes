@@ -10,11 +10,15 @@ interface SearchResult {
     name: string;
     address: string;
     rating: number;
-    user_ratings_total: number; // Added this based on usage in the new code
+    user_ratings_total: number;
     website: string | null;
     phone: string;
     emails: string[];
     socials: { [key: string]: string };
+    city?: string;
+    state?: string;
+    country?: string;
+    keyword?: string;
 }
 
 export default function SearchPage() {

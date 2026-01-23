@@ -16,6 +16,7 @@ export async function GET() {
             emails: JSON.parse(lead.emails),
             socials: JSON.parse(lead.socials),
             techStack: lead.techStack ? JSON.parse(lead.techStack) : [],
+            lastContactDate: lead.lastContactDate ? lead.lastContactDate.toISOString() : null,
             scraped_data: {
                 emails: JSON.parse(lead.emails),
                 socials: JSON.parse(lead.socials),
@@ -41,7 +42,9 @@ export async function POST(request: Request) {
 
         const {
             place_id, name, address, rating, phone, website,
-            city, keyword, emails, socials, techStack, hasSsl
+            city, state, country, keyword, emails, socials, techStack, hasSsl,
+            // NEW: Additional fields from enhanced Google API
+            economyLevel, description
         } = body;
 
         // Check if exists
@@ -66,13 +69,19 @@ export async function POST(request: Request) {
                 rating: rating || 0,
                 phone: phone || '',
                 website: website || '',
-                city: city || 'Unknown',
-                keyword: keyword || 'Unknown',
+                city: city || null,
+                state: state || null,
+                country: country || null,
+                keyword: keyword || null,
                 emails: JSON.stringify(emails || []),
                 socials: JSON.stringify(socials || {}),
                 techStack: JSON.stringify(techStack || []),
                 hasSsl: hasSsl || false,
-                status: 'NEW'
+                status: 'NEW',
+                lastContactDate: null,
+                // NEW: Save additional fields from Google API
+                economyLevel: economyLevel || 0,
+                description: description || null
             }
         });
 

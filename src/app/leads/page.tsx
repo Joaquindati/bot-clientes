@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { Download, Trash2, Mail, ExternalLink, MessageCircle, Sparkles } from 'lucide-react';
+import { Download, Trash2, MessageCircle, Sparkles } from 'lucide-react';
 import { Lead, getLeads, deleteLead, updateLeadStatus } from '@/lib/storage';
 import { cn } from '@/lib/utils';
 import Link from 'next/link';
@@ -72,8 +72,13 @@ export default function LeadsPage() {
                             <thead className="bg-gray-50 dark:bg-zinc-800/50">
                                 <tr>
                                     <th className="px-6 py-3 font-medium text-gray-500">Nombre</th>
-                                    <th className="px-6 py-3 font-medium text-gray-500">Contacto</th>
-                                    <th className="px-6 py-3 font-medium text-gray-500">Emails</th>
+                                    <th className="px-6 py-3 font-medium text-gray-500">Rubro</th>
+                                    <th className="px-6 py-3 font-medium text-gray-500">Ciudad</th>
+                                    <th className="px-6 py-3 font-medium text-gray-500">Estado/Provincia</th>
+                                    <th className="px-6 py-3 font-medium text-gray-500">País</th>
+                                    <th className="px-6 py-3 font-medium text-gray-500">Web</th>
+                                    <th className="px-6 py-3 font-medium text-gray-500">Nivel Econ.</th>
+                                    <th className="px-6 py-3 font-medium text-gray-500">Último Contacto</th>
                                     <th className="px-6 py-3 font-medium text-gray-500">Estado</th>
                                     <th className="px-6 py-3 font-medium text-gray-500 text-right">Acciones</th>
                                 </tr>
@@ -86,39 +91,65 @@ export default function LeadsPage() {
                                                 <div className="font-medium text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300 hover:underline">
                                                     {lead.name}
                                                 </div>
-                                                <div className="text-xs text-gray-500 truncate max-w-[200px]">{lead.address}</div>
                                             </Link>
                                         </td>
                                         <td className="px-6 py-4">
-                                            <div className="flex flex-col gap-1">
-                                                {lead.phone && <span className="text-gray-600 dark:text-gray-400 text-xs">{lead.phone}</span>}
-                                                {lead.website && (
-                                                    <a href={lead.website} target="_blank" rel="noreferrer" className="flex items-center text-blue-600 hover:underline text-xs">
-                                                        Sitio Web <ExternalLink className="ml-1 h-3 w-3" />
-                                                    </a>
-                                                )}
+                                            <span className="text-gray-600 dark:text-gray-400 text-xs">
+                                                {lead.keyword || '-'}
+                                            </span>
+                                        </td>
+                                        <td className="px-6 py-4">
+                                            <span className="text-gray-600 dark:text-gray-400 text-xs">
+                                                {lead.city || '-'}
+                                            </span>
+                                        </td>
+                                        <td className="px-6 py-4">
+                                            <span className="text-gray-600 dark:text-gray-400 text-xs">
+                                                {lead.state || '-'}
+                                            </span>
+                                        </td>
+                                        <td className="px-6 py-4">
+                                            <span className="text-gray-600 dark:text-gray-400 text-xs">
+                                                {lead.country || '-'}
+                                            </span>
+                                        </td>
+                                        <td className="px-6 py-4">
+                                            <span className={cn(
+                                                "inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium",
+                                                lead.website
+                                                    ? "bg-green-50 text-green-700 ring-1 ring-inset ring-green-600/20 dark:bg-green-900/20 dark:text-green-400"
+                                                    : "bg-gray-50 text-gray-600 ring-1 ring-inset ring-gray-500/20 dark:bg-gray-800/20 dark:text-gray-400"
+                                            )}>
+                                                {lead.website ? 'Sí' : 'No'}
+                                            </span>
+                                        </td>
+                                        <td className="px-6 py-4">
+                                            <div className="flex gap-0.5">
+                                                {[1, 2, 3].map((level) => (
+                                                    <span
+                                                        key={level}
+                                                        className={`text-sm ${
+                                                            (lead.economyLevel || 0) >= level
+                                                                ? 'text-green-600 dark:text-green-400'
+                                                                : 'text-gray-300 dark:text-gray-600'
+                                                        }`}
+                                                    >
+                                                        $
+                                                    </span>
+                                                ))}
                                             </div>
                                         </td>
                                         <td className="px-6 py-4">
-                                            {lead.emails.length > 0 ? (
-                                                <div className="flex flex-col gap-1">
-                                                    {lead.emails.map(email => (
-                                                        <button
-                                                            key={email}
-                                                            onClick={() => {
-                                                                navigator.clipboard.writeText(email);
-                                                                alert(`Email copiado: ${email}`);
-                                                            }}
-                                                            className="inline-flex items-center text-xs text-gray-600 dark:text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
-                                                            title="Clic para copiar"
-                                                        >
-                                                            <Mail className="mr-1 h-3 w-3" /> {email}
-                                                        </button>
-                                                    ))}
-                                                </div>
-                                            ) : (
-                                                <span className="text-gray-400 text-xs">-</span>
-                                            )}
+                                            <span className="text-gray-600 dark:text-gray-400 text-xs">
+                                                {lead.lastContactDate
+                                                    ? new Date(lead.lastContactDate).toLocaleDateString('es-ES', {
+                                                        day: '2-digit',
+                                                        month: '2-digit',
+                                                        year: 'numeric'
+                                                    })
+                                                    : '-'
+                                                }
+                                            </span>
                                         </td>
                                         <td className="px-6 py-4">
                                             <select
@@ -148,9 +179,17 @@ export default function LeadsPage() {
                                                 >
                                                     <Sparkles className="h-4 w-4" />
                                                 </button>
-                                                <button className="p-2 text-gray-400 hover:text-green-600 hover:bg-green-50 rounded-md transition-colors" title="Enviar WhatsApp">
-                                                    <MessageCircle className="h-4 w-4" />
-                                                </button>
+                                                {lead.phone && (
+                                                    <a
+                                                        href={`https://wa.me/${lead.phone.replace(/[^0-9]/g, '')}`}
+                                                        target="_blank"
+                                                        rel="noreferrer"
+                                                        className="p-2 text-gray-400 hover:text-green-600 hover:bg-green-50 rounded-md transition-colors"
+                                                        title="Enviar WhatsApp"
+                                                    >
+                                                        <MessageCircle className="h-4 w-4" />
+                                                    </a>
+                                                )}
                                                 <button
                                                     onClick={() => handleDelete(lead.place_id)}
                                                     className="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-md transition-colors" title="Eliminar"

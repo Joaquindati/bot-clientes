@@ -16,6 +16,8 @@ model Lead {
   phone     String?
   website   String?
   city      String?
+  state     String?
+  country   String?
   keyword   String?
 
   // Contact Info
@@ -27,8 +29,24 @@ model Lead {
   hasSsl    Boolean @default(false)
 
   // Status
-  status    String   @default("NEW") // NEW, CONTACTED, INTERESTED, CLIENT
-  notes     String?
+  status         String   @default("NEW") // NEW, CONTACTED, INTERESTED, CLIENT
+  notes          String?
+  description    String?  // Rich text description field
+  lastContactDate DateTime?
+  economyLevel   Int      @default(0) // 0 = Not set, 1 = $, 2 = $$, 3 = $$$
+
+  // Sales Intelligence Fields
+  decisionMaker           String?   // Nombre del contacto clave
+  decisionMakerRole       String?   // Cargo/rol del tomador de decisión
+  estimatedCloseDate      DateTime? // Fecha estimada de cierre
+  urgencyLevel            String?   // HIGH, MEDIUM, LOW
+  painPoints              String?   // Principales dolores/problemas
+  leadSource              String?   // Google Maps, Referido, LinkedIn, etc.
+  bestContactTime         String?   // Mañana, Tarde, Noche
+  preferredContactChannel String?   // WhatsApp, Email, Llamada
+  employeeCount           String?   // 1-5, 6-20, 21-50, 50+
+  nextAction              String?   // Siguiente paso específico
+  nextActionDate          DateTime? // Fecha de seguimiento
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
