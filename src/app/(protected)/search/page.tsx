@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Search, MapPin, Loader2, Play, Globe, Phone, Star, Building2, Facebook, Instagram, Linkedin, Plus, Check } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { saveLead } from '@/lib/storage';
@@ -21,11 +21,84 @@ interface SearchResult {
     keyword?: string;
 }
 
+interface SearchFormData {
+    keyword: string;
+    city: string;
+    country: string;
+}
+
+const STORAGE_KEYS = {
+    FORM_DATA: 'search_form_data',
+    RESULTS: 'search_results',
+    SAVED_IDS: 'search_saved_ids',
+    HAS_SEARCHED: 'search_has_searched'
+};
+
 export default function SearchPage() {
     const [loading, setLoading] = useState(false);
     const [results, setResults] = useState<SearchResult[]>([]);
     const [hasSearched, setHasSearched] = useState(false);
     const [savedIds, setSavedIds] = useState<Set<string>>(new Set());
+    const [formData, setFormData] = useState<SearchFormData>({
+        keyword: '',
+        city: '',
+        country: '',
+    });
+
+    // Cargar datos guardados al montar el componente
+    useEffect(() => {
+        const loadSavedData = () => {
+            try {
+                // Cargar datos del formulario
+                const savedFormData = localStorage.getItem(STORAGE_KEYS.FORM_DATA);
+                if (savedFormData) {
+                    const parsedData = JSON.parse(savedFormData);
+                    // Filter out apiKey if it exists in old saved data
+                    const { apiKey, ...cleanData } = parsedData;
+                    setFormData(cleanData);
+                }
+
+                // Cargar resultados
+                const savedResults = localStorage.getItem(STORAGE_KEYS.RESULTS);
+                if (savedResults) {
+                    setResults(JSON.parse(savedResults));
+                }
+
+                // Cargar IDs guardados
+                const savedIdsData = localStorage.getItem(STORAGE_KEYS.SAVED_IDS);
+                if (savedIdsData) {
+                    setSavedIds(new Set(JSON.parse(savedIdsData)));
+                }
+
+                // Cargar estado de búsqueda
+                const savedHasSearched = localStorage.getItem(STORAGE_KEYS.HAS_SEARCHED);
+                if (savedHasSearched) {
+                    setHasSearched(JSON.parse(savedHasSearched));
+                }
+            } catch (error) {
+                console.error('Error loading saved search data:', error);
+            }
+        };
+
+        loadSavedData();
+    }, []);
+
+    // Guardar resultados cuando cambien
+    useEffect(() => {
+        if (results.length > 0) {
+            localStorage.setItem(STORAGE_KEYS.RESULTS, JSON.stringify(results));
+        }
+    }, [results]);
+
+    // Guardar IDs guardados cuando cambien
+    useEffect(() => {
+        localStorage.setItem(STORAGE_KEYS.SAVED_IDS, JSON.stringify([...savedIds]));
+    }, [savedIds]);
+
+    // Guardar estado de búsqueda
+    useEffect(() => {
+        localStorage.setItem(STORAGE_KEYS.HAS_SEARCHED, JSON.stringify(hasSearched));
+    }, [hasSearched]);
 
     const handleSearch = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
@@ -33,15 +106,23 @@ export default function SearchPage() {
         setHasSearched(false);
         setResults([]);
 
-        const formData = new FormData(e.currentTarget);
-        const keyword = formData.get('keyword');
-        const city = formData.get('city');
-        const apiKey = formData.get('apiKey');
+        const formDataObj = new FormData(e.currentTarget);
+        const keyword = formDataObj.get('keyword') as string;
+        const city = formDataObj.get('city') as string;
+        const country = formDataObj.get('country') as string;
+
+        // Use environment variable directly
+        const apiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || '';
+
+        // Guardar datos del formulario en state y localStorage
+        const searchFormData: SearchFormData = { keyword, city, country };
+        setFormData(searchFormData);
+        localStorage.setItem(STORAGE_KEYS.FORM_DATA, JSON.stringify(searchFormData));
 
         try {
             const res = await fetch('/api/search', {
                 method: 'POST',
-                body: JSON.stringify({ keyword, city, apiKey }),
+                body: JSON.stringify({ keyword, city, country, apiKey }),
                 headers: { 'Content-Type': 'application/json' }
             });
             const data = await res.json();
@@ -77,22 +158,9 @@ export default function SearchPage() {
 
             <div className="rounded-xl border bg-white p-6 shadow-sm dark:bg-zinc-900 dark:border-zinc-800">
                 <form onSubmit={handleSearch} className="space-y-6">
-                    <div className="space-y-2">
-                        <label className="text-sm font-medium leading-none">
-                            Google Maps API Key (Opcional)
-                        </label>
-                        <input
-                            name="apiKey"
-                            type="password"
-                            className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-600 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 dark:bg-zinc-800 dark:border-zinc-700"
-                            placeholder="Pegar tu API Key aquí para búsqueda real"
-                        />
-                        <p className="text-xs text-muted-foreground text-gray-400">
-                            Si se deja vacío, se usará el modo Demo con datos de prueba.
-                        </p>
-                    </div>
+                    {/* API Key field removed as per user request */}
 
-                    <div className="grid gap-6 md:grid-cols-7">
+                    <div className="grid gap-6 md:grid-cols-8">
                         <div className="md:col-span-3 space-y-2">
                             <label className="text-sm font-medium leading-none">
                                 Palabra Clave (Rubro)
@@ -101,6 +169,8 @@ export default function SearchPage() {
                                 <Search className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
                                 <input
                                     name="keyword"
+                                    value={formData.keyword}
+                                    onChange={(e) => setFormData({ ...formData, keyword: e.target.value })}
                                     className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 pl-9 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-600 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 dark:bg-zinc-800 dark:border-zinc-700"
                                     placeholder="Ej. Abogados, Pizzería, Dentista"
                                     required
@@ -116,9 +186,27 @@ export default function SearchPage() {
                                 <MapPin className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
                                 <input
                                     name="city"
+                                    value={formData.city}
+                                    onChange={(e) => setFormData({ ...formData, city: e.target.value })}
                                     className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 pl-9 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-600 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 dark:bg-zinc-800 dark:border-zinc-700"
                                     placeholder="Ej. Santiago, Buenos Aires, Madrid"
                                     required
+                                />
+                            </div>
+                        </div>
+
+                        <div className="md:col-span-2 space-y-2">
+                            <label className="text-sm font-medium leading-none">
+                                País
+                            </label>
+                            <div className="relative">
+                                <Globe className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
+                                <input
+                                    name="country"
+                                    value={formData.country}
+                                    onChange={(e) => setFormData({ ...formData, country: e.target.value })}
+                                    className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 pl-9 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-600 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 dark:bg-zinc-800 dark:border-zinc-700"
+                                    placeholder="Ej. Argentina, España"
                                 />
                             </div>
                         </div>
@@ -217,22 +305,16 @@ export default function SearchPage() {
                                             </div>
 
                                             {result.emails.length > 0 ? (
-                                                <div className="flex gap-1">
-                                                    {result.emails.map((email, idx) => (
-                                                        <button
-                                                            key={idx}
-                                                            onClick={() => {
-                                                                navigator.clipboard.writeText(email);
-                                                                // Optional: Visual feedback could be added here
-                                                                alert(`Email copiado: ${email}`);
-                                                            }}
-                                                            className="inline-flex items-center rounded-full bg-green-50 px-2 py-1 text-xs font-medium text-green-700 ring-1 ring-inset ring-green-600/20 hover:bg-green-100 dark:bg-green-900/30 dark:text-green-400 cursor-pointer transition-colors"
-                                                            title="Clic para copiar"
-                                                        >
-                                                            {email}
-                                                        </button>
-                                                    ))}
-                                                </div>
+                                                <button
+                                                    onClick={() => {
+                                                        navigator.clipboard.writeText(result.emails[0]);
+                                                        alert(`Email copiado: ${result.emails[0]}`);
+                                                    }}
+                                                    className="inline-flex items-center rounded-full bg-green-50 px-2 py-1 text-xs font-medium text-green-700 ring-1 ring-inset ring-green-600/20 hover:bg-green-100 dark:bg-green-900/30 dark:text-green-400 cursor-pointer transition-colors"
+                                                    title="Clic para copiar"
+                                                >
+                                                    {result.emails[0]}
+                                                </button>
                                             ) : (
                                                 <span className="inline-flex items-center rounded-full bg-gray-50 px-2 py-1 text-xs font-medium text-gray-600 ring-1 ring-inset ring-gray-500/10 dark:bg-gray-800 dark:text-gray-400">
                                                     Sin Emails

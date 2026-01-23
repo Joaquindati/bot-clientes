@@ -1,11 +1,17 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/db';
+import { auth } from '@/lib/auth';
 
 export async function GET(
     request: Request,
-    { params }: { params: { id: string } }
+    { params }: { params: Promise<{ id: string }> }
 ) {
     try {
+        const session = await auth();
+        if (!session?.user?.id) {
+            return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+        }
+
         const { id } = await params;
 
         const lead = await prisma.lead.findUnique({
@@ -14,6 +20,11 @@ export async function GET(
 
         if (!lead) {
             return NextResponse.json({ error: 'Lead not found' }, { status: 404 });
+        }
+
+        // Verify ownership
+        if (lead.userId !== session.user.id) {
+            return NextResponse.json({ error: 'Unauthorized' }, { status: 403 });
         }
 
         // Parse JSON fields
@@ -36,13 +47,31 @@ export async function GET(
 
 export async function DELETE(
     request: Request,
-    { params }: { params: { id: string } }
+    { params }: { params: Promise<{ id: string }> }
 ) {
     try {
-        const { id } = await params; // Next.js 15+ needs await for params
+        const session = await auth();
+        if (!session?.user?.id) {
+            return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+        }
+
+        const { id } = await params;
+
+        // Verify existence and ownership first
+        const lead = await prisma.lead.findUnique({
+            where: { place_id: id }
+        });
+
+        if (!lead) {
+            return NextResponse.json({ error: 'Lead not found' }, { status: 404 });
+        }
+
+        if (lead.userId !== session.user.id) {
+            return NextResponse.json({ error: 'Unauthorized' }, { status: 403 });
+        }
 
         await prisma.lead.delete({
-            where: { place_id: id } // Using place_id for frontend compatibility initially, or ID? Frontend sends place_id.
+            where: { place_id: id }
         });
 
         return NextResponse.json({ message: 'Lead deleted' });
@@ -54,10 +83,29 @@ export async function DELETE(
 
 export async function PATCH(
     request: Request,
-    { params }: { params: { id: string } }
+    { params }: { params: Promise<{ id: string }> }
 ) {
     try {
+        const session = await auth();
+        if (!session?.user?.id) {
+            return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+        }
+
         const { id } = await params;
+
+        // Verify existence and ownership
+        const lead = await prisma.lead.findUnique({
+            where: { place_id: id }
+        });
+
+        if (!lead) {
+            return NextResponse.json({ error: 'Lead not found' }, { status: 404 });
+        }
+
+        if (lead.userId !== session.user.id) {
+            return NextResponse.json({ error: 'Unauthorized' }, { status: 403 });
+        }
+
         const body = await request.json();
 
         // Prepare update data

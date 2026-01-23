@@ -17,7 +17,7 @@ interface Lead {
     country: string | null;
     keyword: string;
     emails: string[];
-    socials: Record<string, string | undefined>;
+    socials: Record<string, string>;
     techStack: string[];
     hasSsl: boolean;
     status: 'NEW' | 'CONTACTED' | 'INTERESTED' | 'CLIENT';

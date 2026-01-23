@@ -28,8 +28,10 @@ function parseAddress(address: string): { state: string | null; country: string 
 }
 
 export async function POST(request: Request) {
-    const { keyword, city, apiKey } = await request.json();
-    const query = `${keyword} in ${city}`;
+    const { keyword, city, country, apiKey } = await request.json();
+    const query = country
+        ? `${keyword} in ${city}, ${country}`
+        : `${keyword} in ${city}`;
 
     // 1. MOCK MODE (If no API Key provided)
     if (!apiKey) {
@@ -47,7 +49,7 @@ export async function POST(request: Request) {
                 socials: { instagram: 'https://instagram.com/ejemplo' },
                 city: city,
                 state: 'Buenos Aires',
-                country: 'Argentina',
+                country: country || 'Argentina',
                 keyword: keyword,
                 // NEW: Enhanced fields
                 economyLevel: 3, // High-end
@@ -68,7 +70,7 @@ export async function POST(request: Request) {
                 socials: { facebook: 'https://facebook.com/express' },
                 city: city,
                 state: 'Buenos Aires',
-                country: 'Argentina',
+                country: country || 'Argentina',
                 keyword: keyword,
                 // NEW: Enhanced fields
                 economyLevel: 1, // Budget
@@ -89,7 +91,7 @@ export async function POST(request: Request) {
                 socials: {},
                 city: city,
                 state: 'Buenos Aires',
-                country: 'Argentina',
+                country: country || 'Argentina',
                 keyword: keyword,
                 // NEW: Enhanced fields
                 economyLevel: 2, // Medium
@@ -113,7 +115,10 @@ export async function POST(request: Request) {
 
         // Loop to fetch pages until we have 50 results or no more token
         do {
-            const params: Record<string, string> = { query, key: apiKey as string };
+            const params: { query: string; key: string; pagetoken?: string } = {
+                query,
+                key: apiKey as string
+            };
             if (nextPageToken) {
                 params.pagetoken = nextPageToken;
                 // Google requires a short delay before the token is valid
@@ -140,15 +145,15 @@ export async function POST(request: Request) {
 
         // B. Enrichment Loop (Parallel)
         const enrichedResults = await Promise.all(limitedPlaces.map(async (place) => {
-            const address = place.formatted_address || '';
+            const address = (place.formatted_address as string) || '';
             const { state, country } = parseAddress(address);
 
             const finalPlace = {
-                place_id: place.place_id!,
-                name: place.name,
+                place_id: place.place_id as string,
+                name: place.name as string,
                 address: address,
-                rating: place.rating || 0,
-                user_ratings_total: place.user_ratings_total || 0,
+                rating: (place.rating as number) || 0,
+                user_ratings_total: (place.user_ratings_total as number) || 0,
                 website: null as string | null,
                 phone: '',
                 emails: [] as string[],
@@ -169,7 +174,7 @@ export async function POST(request: Request) {
             try {
                 const detailsRes = await client.placeDetails({
                     params: {
-                        place_id: place.place_id!,
+                        place_id: place.place_id as string,
                         fields: [
                             'formatted_phone_number',
                             'international_phone_number',

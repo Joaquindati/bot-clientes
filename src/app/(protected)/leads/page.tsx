@@ -1,15 +1,20 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { Download, Trash2, MessageCircle, Sparkles } from 'lucide-react';
+import { Download, Trash2, MessageCircle, Sparkles, ArrowUpDown, ArrowUp, ArrowDown } from 'lucide-react';
 import { Lead, getLeads, deleteLead, updateLeadStatus } from '@/lib/storage';
 import { cn } from '@/lib/utils';
 import Link from 'next/link';
 
 import { PitchGenerator } from '@/components/PitchGenerator';
 
+type SortField = 'name' | 'keyword' | 'city' | 'state' | 'country' | 'website' | 'economyLevel' | 'lastContactDate' | 'status';
+type SortDirection = 'asc' | 'desc' | null;
+
 export default function LeadsPage() {
     const [leads, setLeads] = useState<Lead[]>([]);
+    const [sortField, setSortField] = useState<SortField | null>(null);
+    const [sortDirection, setSortDirection] = useState<SortDirection>(null);
 
     useEffect(() => {
         const fetchLeads = async () => {
@@ -39,6 +44,68 @@ export default function LeadsPage() {
         const data = await getLeads();
         setLeads(data);
     };
+
+    const handleSort = (field: SortField) => {
+        if (sortField === field) {
+            // Toggle direction: asc -> desc -> null
+            if (sortDirection === 'asc') {
+                setSortDirection('desc');
+            } else if (sortDirection === 'desc') {
+                setSortDirection(null);
+                setSortField(null);
+            }
+        } else {
+            // New field, start with asc
+            setSortField(field);
+            setSortDirection('asc');
+        }
+    };
+
+    const getSortedLeads = () => {
+        if (!sortField || !sortDirection) {
+            return leads;
+        }
+
+        return [...leads].sort((a, b) => {
+            let aValue: any = a[sortField];
+            let bValue: any = b[sortField];
+
+            // Handle null/undefined values
+            if (aValue === null || aValue === undefined) aValue = '';
+            if (bValue === null || bValue === undefined) bValue = '';
+
+            // Special handling for different field types
+            if (sortField === 'lastContactDate') {
+                aValue = aValue ? new Date(aValue).getTime() : 0;
+                bValue = bValue ? new Date(bValue).getTime() : 0;
+            } else if (sortField === 'economyLevel') {
+                aValue = aValue || 0;
+                bValue = bValue || 0;
+            } else if (sortField === 'website') {
+                aValue = aValue ? 1 : 0;
+                bValue = bValue ? 1 : 0;
+            } else if (typeof aValue === 'string') {
+                aValue = aValue.toLowerCase();
+                bValue = bValue.toLowerCase();
+            }
+
+            if (aValue < bValue) return sortDirection === 'asc' ? -1 : 1;
+            if (aValue > bValue) return sortDirection === 'asc' ? 1 : -1;
+            return 0;
+        });
+    };
+
+    const SortIcon = ({ field }: { field: SortField }) => {
+        if (sortField !== field) {
+            return <ArrowUpDown className="h-4 w-4 opacity-0 group-hover:opacity-50 transition-opacity" />;
+        }
+        if (sortDirection === 'asc') {
+            return <ArrowUp className="h-4 w-4" />;
+        }
+        return <ArrowDown className="h-4 w-4" />;
+    };
+
+    const sortedLeads = getSortedLeads();
 
     return (
         <div className="space-y-8">
@@ -71,20 +138,92 @@ export default function LeadsPage() {
                         <table className="w-full text-left text-sm">
                             <thead className="bg-gray-50 dark:bg-zinc-800/50">
                                 <tr>
-                                    <th className="px-6 py-3 font-medium text-gray-500">Nombre</th>
-                                    <th className="px-6 py-3 font-medium text-gray-500">Rubro</th>
-                                    <th className="px-6 py-3 font-medium text-gray-500">Ciudad</th>
-                                    <th className="px-6 py-3 font-medium text-gray-500">Estado/Provincia</th>
-                                    <th className="px-6 py-3 font-medium text-gray-500">País</th>
-                                    <th className="px-6 py-3 font-medium text-gray-500">Web</th>
-                                    <th className="px-6 py-3 font-medium text-gray-500">Nivel Econ.</th>
-                                    <th className="px-6 py-3 font-medium text-gray-500">Último Contacto</th>
-                                    <th className="px-6 py-3 font-medium text-gray-500">Estado</th>
+                                    <th
+                                        className="px-6 py-3 font-medium text-gray-500 cursor-pointer select-none group hover:bg-gray-100 dark:hover:bg-zinc-800 transition-colors"
+                                        onClick={() => handleSort('name')}
+                                    >
+                                        <div className="flex items-center gap-2">
+                                            Nombre
+                                            <SortIcon field="name" />
+                                        </div>
+                                    </th>
+                                    <th
+                                        className="px-6 py-3 font-medium text-gray-500 cursor-pointer select-none group hover:bg-gray-100 dark:hover:bg-zinc-800 transition-colors"
+                                        onClick={() => handleSort('keyword')}
+                                    >
+                                        <div className="flex items-center gap-2">
+                                            Rubro
+                                            <SortIcon field="keyword" />
+                                        </div>
+                                    </th>
+                                    <th
+                                        className="px-6 py-3 font-medium text-gray-500 cursor-pointer select-none group hover:bg-gray-100 dark:hover:bg-zinc-800 transition-colors"
+                                        onClick={() => handleSort('city')}
+                                    >
+                                        <div className="flex items-center gap-2">
+                                            Ciudad
+                                            <SortIcon field="city" />
+                                        </div>
+                                    </th>
+                                    <th
+                                        className="px-6 py-3 font-medium text-gray-500 cursor-pointer select-none group hover:bg-gray-100 dark:hover:bg-zinc-800 transition-colors"
+                                        onClick={() => handleSort('state')}
+                                    >
+                                        <div className="flex items-center gap-2">
+                                            Estado/Provincia
+                                            <SortIcon field="state" />
+                                        </div>
+                                    </th>
+                                    <th
+                                        className="px-6 py-3 font-medium text-gray-500 cursor-pointer select-none group hover:bg-gray-100 dark:hover:bg-zinc-800 transition-colors"
+                                        onClick={() => handleSort('country')}
+                                    >
+                                        <div className="flex items-center gap-2">
+                                            País
+                                            <SortIcon field="country" />
+                                        </div>
+                                    </th>
+                                    <th
+                                        className="px-6 py-3 font-medium text-gray-500 cursor-pointer select-none group hover:bg-gray-100 dark:hover:bg-zinc-800 transition-colors"
+                                        onClick={() => handleSort('website')}
+                                    >
+                                        <div className="flex items-center gap-2">
+                                            Web
+                                            <SortIcon field="website" />
+                                        </div>
+                                    </th>
+                                    <th
+                                        className="px-6 py-3 font-medium text-gray-500 cursor-pointer select-none group hover:bg-gray-100 dark:hover:bg-zinc-800 transition-colors"
+                                        onClick={() => handleSort('economyLevel')}
+                                    >
+                                        <div className="flex items-center gap-2">
+                                            Nivel Econ.
+                                            <SortIcon field="economyLevel" />
+                                        </div>
+                                    </th>
+                                    <th
+                                        className="px-6 py-3 font-medium text-gray-500 cursor-pointer select-none group hover:bg-gray-100 dark:hover:bg-zinc-800 transition-colors"
+                                        onClick={() => handleSort('lastContactDate')}
+                                    >
+                                        <div className="flex items-center gap-2">
+                                            Último Contacto
+                                            <SortIcon field="lastContactDate" />
+                                        </div>
+                                    </th>
+                                    <th
+                                        className="px-6 py-3 font-medium text-gray-500 cursor-pointer select-none group hover:bg-gray-100 dark:hover:bg-zinc-800 transition-colors"
+                                        onClick={() => handleSort('status')}
+                                    >
+                                        <div className="flex items-center gap-2">
+                                            Estado
+                                            <SortIcon field="status" />
+                                        </div>
+                                    </th>
                                     <th className="px-6 py-3 font-medium text-gray-500 text-right">Acciones</th>
                                 </tr>
                             </thead>
                             <tbody className="divide-y divide-gray-100 dark:divide-zinc-800">
-                                {leads.map((lead) => (
+                                {sortedLeads.map((lead) => (
                                     <tr key={lead.place_id} className="group hover:bg-gray-50 dark:hover:bg-zinc-800/50">
                                         <td className="px-6 py-4">
                                             <Link href={`/leads/${lead.place_id}`} className="block">
