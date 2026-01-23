@@ -148,7 +148,7 @@ export default function SearchPage() {
     };
 
     return (
-        <div className="space-y-6">
+        <div className="space-y-6 min-w-0 overflow-hidden">
             <div>
                 <h1 className="text-3xl font-bold tracking-tight text-gray-900 dark:text-gray-100">Buscador</h1>
                 <p className="text-muted-foreground text-gray-500">
@@ -231,19 +231,19 @@ export default function SearchPage() {
                         No se encontraron resultados para esta búsqueda.
                     </div>
                 ) : (
-                    <div className="grid gap-4 md:grid-cols-1 lg:grid-cols-2">
+                    <div className="grid gap-3 md:gap-4 grid-cols-1 lg:grid-cols-2 min-w-0">
                         {results.map((result) => {
                             const isSaved = savedIds.has(result.place_id);
                             return (
-                                <div key={result.place_id} className="relative flex flex-col rounded-xl border bg-white p-6 shadow-sm transition-all hover:shadow-md dark:bg-zinc-900 dark:border-zinc-800">
-                                    <div className="flex items-start justify-between mb-4">
-                                        <div className="flex items-center gap-3">
-                                            <div className="flex h-10 w-10 items-center justify-center rounded-full bg-blue-100 text-blue-600 dark:bg-blue-900/30 dark:text-blue-400">
+                                <div key={result.place_id} className="relative flex flex-col rounded-xl border bg-white p-3 md:p-6 shadow-sm transition-all hover:shadow-md dark:bg-zinc-900 dark:border-zinc-800 min-w-0 overflow-hidden">
+                                    <div className="flex items-center justify-between">
+                                        <div className="flex items-center gap-2 md:gap-3 flex-1 min-w-0">
+                                            <div className="hidden md:flex h-10 w-10 items-center justify-center rounded-full bg-blue-100 text-blue-600 dark:bg-blue-900/30 dark:text-blue-400 flex-shrink-0">
                                                 <Building2 className="h-5 w-5" />
                                             </div>
-                                            <div>
-                                                <h3 className="font-semibold text-lg leading-tight dark:text-gray-100">{result.name}</h3>
-                                                <p className="text-sm text-gray-500 truncate flex items-center mt-1">
+                                            <div className="min-w-0 flex-1">
+                                                <h3 className="font-semibold text-sm md:text-lg leading-tight dark:text-gray-100 truncate">{result.name}</h3>
+                                                <p className="text-xs md:text-sm text-gray-500 flex items-center mt-0.5">
                                                     <Star className="h-3 w-3 text-yellow-500 mr-1 fill-yellow-500" />
                                                     {result.rating} ({result.user_ratings_total})
                                                 </p>
@@ -253,7 +253,7 @@ export default function SearchPage() {
                                             onClick={() => handleSave(result)}
                                             disabled={isSaved}
                                             className={cn(
-                                                "flex h-8 w-8 items-center justify-center rounded-full transition-colors",
+                                                "flex h-7 w-7 md:h-8 md:w-8 items-center justify-center rounded-full transition-colors flex-shrink-0 ml-2",
                                                 isSaved
                                                     ? "bg-green-100 text-green-600 dark:bg-green-900/30 dark:text-green-400"
                                                     : "bg-gray-100 text-gray-600 hover:bg-blue-50 hover:text-blue-600 dark:bg-zinc-800 dark:text-gray-400 dark:hover:bg-zinc-700"
@@ -263,7 +263,8 @@ export default function SearchPage() {
                                         </button>
                                     </div>
 
-                                    <div className="space-y-2 text-sm text-gray-600 dark:text-gray-400 mb-6 flex-1">
+                                    {/* Desktop details - hidden on mobile */}
+                                    <div className="hidden md:block space-y-2 text-sm text-gray-600 dark:text-gray-400 my-4 flex-1">
                                         <div className="flex items-center gap-2">
                                             <MapPin className="h-4 w-4 text-gray-400" />
                                             <span className="truncate">{result.address}</span>
@@ -284,9 +285,11 @@ export default function SearchPage() {
                                         )}
                                     </div>
 
-                                    <div className="border-t pt-4 mt-auto dark:border-zinc-800">
-                                        <div className="flex items-center justify-between">
-                                            <div className="flex gap-2">
+                                    {/* Footer with socials and email */}
+                                    <div className="border-t pt-2 md:pt-4 mt-2 md:mt-auto dark:border-zinc-800">
+                                        <div className="flex items-center justify-between gap-2">
+                                            {/* Socials - hidden on mobile */}
+                                            <div className="hidden md:flex gap-2">
                                                 {result.socials.facebook && (
                                                     <a href={result.socials.facebook} target="_blank" rel="noopener noreferrer" className="hover:opacity-80 transition-opacity">
                                                         <Facebook className="h-4 w-4 text-blue-600" />
@@ -304,16 +307,17 @@ export default function SearchPage() {
                                                 )}
                                             </div>
 
+                                            {/* Email badge - always visible */}
                                             {result.emails.length > 0 ? (
                                                 <button
                                                     onClick={() => {
                                                         navigator.clipboard.writeText(result.emails[0]);
                                                         alert(`Email copiado: ${result.emails[0]}`);
                                                     }}
-                                                    className="inline-flex items-center rounded-full bg-green-50 px-2 py-1 text-xs font-medium text-green-700 ring-1 ring-inset ring-green-600/20 hover:bg-green-100 dark:bg-green-900/30 dark:text-green-400 cursor-pointer transition-colors"
+                                                    className="inline-flex items-center rounded-full bg-green-50 px-2 py-1 text-xs font-medium text-green-700 ring-1 ring-inset ring-green-600/20 hover:bg-green-100 dark:bg-green-900/30 dark:text-green-400 cursor-pointer transition-colors truncate max-w-full md:max-w-none"
                                                     title="Clic para copiar"
                                                 >
-                                                    {result.emails[0]}
+                                                    <span className="truncate">{result.emails[0]}</span>
                                                 </button>
                                             ) : (
                                                 <span className="inline-flex items-center rounded-full bg-gray-50 px-2 py-1 text-xs font-medium text-gray-600 ring-1 ring-inset ring-gray-500/10 dark:bg-gray-800 dark:text-gray-400">

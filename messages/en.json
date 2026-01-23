@@ -1,0 +1,60 @@
+{
+    "Sidebar": {
+        "dashboard": "Dashboard",
+        "search": "Maps Search",
+        "leads": "Lead Management",
+        "tasks": "Tasks",
+        "settings": "Settings",
+        "logout": "Sign Out",
+        "profile": "Profile"
+    },
+    "Settings": {
+        "title": "Settings",
+        "subtitle": "Manage your account settings and preferences.",
+        "profile": {
+            "title": "Profile",
+            "subtitle": "Account information and security",
+            "name": "Name",
+            "email": "Email",
+            "emailNote": "Email cannot be changed",
+            "changePassword": "Change Password",
+            "currentPassword": "Current Password",
+            "newPassword": "New Password",
+            "confirmPassword": "Confirm New Password",
+            "savePassword": "Change Password",
+            "saving": "Saving..."
+        },
+        "notifications": {
+            "title": "Notifications",
+            "subtitle": "Configure your alerts",
+            "emailReminders": "Email Reminders",
+            "emailRemindersDesc": "Receive follow-up reminders",
+            "weeklyReport": "Weekly Report",
+            "weeklyReportDesc": "Weekly activity summary",
+            "leadAlerts": "Lead Alerts",
+            "leadAlertsDesc": "Notify for leads requiring attention"
+        },
+        "appearance": {
+            "title": "Appearance",
+            "subtitle": "Customize interface",
+            "theme": "Theme",
+            "system": "Automatic (System)",
+            "light": "Light",
+            "dark": "Dark"
+        },
+        "language": {
+            "title": "Language",
+            "subtitle": "Select your preferred language",
+            "label": "App Language"
+        },
+        "danger": {
+            "title": "Danger Zone",
+            "subtitle": "Irreversible actions",
+            "deleteAccount": "Delete Account",
+            "deleteDesc": "All your data will be permanently deleted",
+            "button": "Delete Account"
+        },
+        "save": "Save Changes",
+        "saved": "Saved"
+    }
+}

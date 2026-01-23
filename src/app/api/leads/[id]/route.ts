@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/db';
 import { auth } from '@/lib/auth';
+import { sendLeadAlertEmail } from '@/lib/email-service';
 
 export async function GET(
     request: Request,
@@ -156,6 +157,37 @@ export async function PATCH(
             where: { place_id: id },
             data: updateData
         });
+
+        // Check for critical alerts
+        try {
+            // Trigger if urgency changed to HIGH or if it is HIGH and status changed
+            // For now, let's trigger on urgency change to HIGH
+            const isHighUrgency = updateData.urgencyLevel === 'HIGH';
+            const wasHighUrgency = lead.urgencyLevel === 'HIGH';
+
+            if (isHighUrgency && !wasHighUrgency) {
+                // Fetch user settings for alerts
+                const userSettings = await prisma.user.findUnique({
+                    where: { id: session.user.id },
+                    select: { leadAlerts: true, name: true, email: true }
+                });
+
+                if (userSettings?.leadAlerts) {
+                    await sendLeadAlertEmail({
+                        userEmail: userSettings.email,
+                        userName: userSettings.name || 'Usuario',
+                        lead: {
+                            ...updatedLead,
+                            urgencyLevel: updatedLead.urgencyLevel || undefined,
+                        },
+                        reason: 'El nivel de urgencia ha cambiado a ALTO'
+                    });
+                }
+            }
+        } catch (alertError) {
+            console.error('Error sending alert email:', alertError);
+            // Don't fail the request if email fails
+        }
 
         // Parse JSON fields for response
         const parsedLead = {

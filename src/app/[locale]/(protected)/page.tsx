@@ -148,17 +148,19 @@ export default function Home() {
         </div>
       </div>
 
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-7">
-        <div className="col-span-4 rounded-xl border bg-white shadow-sm dark:bg-zinc-900 dark:border-zinc-800">
-          <div className="p-6">
-            <h3 className="font-semibold text-lg mb-4">Mapa de Leads</h3>
-            <LeadMap />
+      <div className="grid gap-4 grid-cols-1 lg:grid-cols-7">
+        {/* Recent Leads - First on mobile */}
+        <div className="lg:col-span-3 lg:order-2 rounded-xl border bg-white shadow-sm dark:bg-zinc-900 dark:border-zinc-800">
+          <div className="p-3 md:p-6 h-full">
+            <RecentLeads />
           </div>
         </div>
 
-        <div className="col-span-3 rounded-xl border bg-white shadow-sm dark:bg-zinc-900 dark:border-zinc-800">
-          <div className="p-6 h-full">
-            <RecentLeads />
+        {/* Map - Hidden on mobile, second on desktop */}
+        <div className="hidden lg:block lg:col-span-4 lg:order-1 rounded-xl border bg-white shadow-sm dark:bg-zinc-900 dark:border-zinc-800">
+          <div className="p-6">
+            <h3 className="font-semibold text-lg mb-4">Mapa de Leads</h3>
+            <LeadMap />
           </div>
         </div>
       </div>

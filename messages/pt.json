@@ -1,0 +1,60 @@
+{
+    "Sidebar": {
+        "dashboard": "Painel Principal",
+        "search": "Busca Maps",
+        "leads": "Gestão de Leads",
+        "tasks": "Tarefas",
+        "settings": "Configurações",
+        "logout": "Sair",
+        "profile": "Perfil"
+    },
+    "Settings": {
+        "title": "Configurações",
+        "subtitle": "Configure sua conta e preferências.",
+        "profile": {
+            "title": "Perfil",
+            "subtitle": "Informações da conta e segurança",
+            "name": "Nome",
+            "email": "Email",
+            "emailNote": "O email não pode ser alterado",
+            "changePassword": "Mudar Senha",
+            "currentPassword": "Senha atual",
+            "newPassword": "Nova senha",
+            "confirmPassword": "Confirmar nova senha",
+            "savePassword": "Mudar Senha",
+            "saving": "Salvando..."
+        },
+        "notifications": {
+            "title": "Notificações",
+            "subtitle": "Configure seus alertas",
+            "emailReminders": "Lembretes por email",
+            "emailRemindersDesc": "Receba lembretes de acompanhamento",
+            "weeklyReport": "Relatório semanal",
+            "weeklyReportDesc": "Resumo de atividade semanal",
+            "leadAlerts": "Alertas de leads",
+            "leadAlertsDesc": "Notificar leads que requerem atenção"
+        },
+        "appearance": {
+            "title": "Aparência",
+            "subtitle": "Personalize a interface",
+            "theme": "Tema",
+            "system": "Automático (Sistema)",
+            "light": "Claro",
+            "dark": "Escuro"
+        },
+        "language": {
+            "title": "Idioma",
+            "subtitle": "Selecione seu idioma preferido",
+            "label": "Idioma do aplicativo"
+        },
+        "danger": {
+            "title": "Zona de Perigo",
+            "subtitle": "Ações irreversíveis",
+            "deleteAccount": "Excluir conta",
+            "deleteDesc": "Todos os seus dados serão excluídos permanentemente",
+            "button": "Excluir Conta"
+        },
+        "save": "Salvar Alterações",
+        "saved": "Salvo"
+    }
+}

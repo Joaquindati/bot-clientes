@@ -1,0 +1,60 @@
+{
+    "Sidebar": {
+        "dashboard": "Panel Principal",
+        "search": "Búsqueda Maps",
+        "leads": "Gestión de Leads",
+        "tasks": "Tareas",
+        "settings": "Ajustes",
+        "logout": "Cerrar Sesión",
+        "profile": "Perfil"
+    },
+    "Settings": {
+        "title": "Ajustes",
+        "subtitle": "Configura tu cuenta y preferencias.",
+        "profile": {
+            "title": "Perfil",
+            "subtitle": "Información de tu cuenta y seguridad",
+            "name": "Nombre",
+            "email": "Email",
+            "emailNote": "El email no se puede cambiar",
+            "changePassword": "Cambiar Contraseña",
+            "currentPassword": "Contraseña actual",
+            "newPassword": "Nueva contraseña",
+            "confirmPassword": "Confirmar nueva contraseña",
+            "savePassword": "Cambiar Contraseña",
+            "saving": "Guardando..."
+        },
+        "notifications": {
+            "title": "Notificaciones",
+            "subtitle": "Configura tus alertas",
+            "emailReminders": "Recordatorios por email",
+            "emailRemindersDesc": "Recibe recordatorios de seguimiento",
+            "weeklyReport": "Reporte semanal",
+            "weeklyReportDesc": "Resumen de actividad cada semana",
+            "leadAlerts": "Alertas de leads",
+            "leadAlertsDesc": "Notificar leads que requieren atención"
+        },
+        "appearance": {
+            "title": "Apariencia",
+            "subtitle": "Personaliza la interfaz",
+            "theme": "Tema",
+            "system": "Automático (Sistema)",
+            "light": "Claro",
+            "dark": "Oscuro"
+        },
+        "language": {
+            "title": "Idioma",
+            "subtitle": "Selecciona tu idioma preferido",
+            "label": "Idioma de la aplicación"
+        },
+        "danger": {
+            "title": "Zona de Peligro",
+            "subtitle": "Acciones irreversibles",
+            "deleteAccount": "Eliminar cuenta",
+            "deleteDesc": "Se eliminarán todos tus datos permanentemente",
+            "button": "Eliminar Cuenta"
+        },
+        "save": "Guardar Cambios",
+        "saved": "Guardado"
+    }
+}

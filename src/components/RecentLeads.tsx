@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
-import { Clock, CheckCircle2, User, Phone } from 'lucide-react';
+import { AlertCircle } from 'lucide-react';
 
 interface RecentLead {
     id: string;
@@ -10,14 +10,8 @@ interface RecentLead {
     status: string;
     lastContactDate: string | null;
     city: string | null;
+    urgencyLevel: string | null;
 }
-
-const STATUS_ICONS = {
-    NEW: <User className="h-4 w-4 text-blue-500" />,
-    CONTACTED: <Phone className="h-4 w-4 text-yellow-500" />,
-    INTERESTED: <CheckCircle2 className="h-4 w-4 text-green-500" />,
-    CLIENT: <CheckCircle2 className="h-4 w-4 text-purple-500" />,
-};
 
 export default function RecentLeads() {
     const [leads, setLeads] = useState<RecentLead[]>([]);
@@ -41,6 +35,19 @@ export default function RecentLeads() {
         fetchRecentLeads();
     }, []);
 
+    // Check if lead has urgency (HIGH urgency or no contact in 30+ days)
+    const hasUrgency = (lead: RecentLead) => {
+        if (lead.urgencyLevel === 'HIGH') return true;
+        if (!lead.lastContactDate) {
+            // No contact date = urgent
+            return true;
+        }
+        const date = new Date(lead.lastContactDate);
+        const now = new Date();
+        const diffDays = Math.floor((now.getTime() - date.getTime()) / (1000 * 60 * 60 * 24));
+        return diffDays > 30;
+    };
+
     const getTimeSince = (dateString: string | null) => {
         if (!dateString) return 'Sin contacto';
         const date = new Date(dateString);
@@ -54,51 +61,58 @@ export default function RecentLeads() {
 
     return (
         <div className="h-full">
-            <h3 className="font-semibold text-lg mb-4">Contactados Recientemente</h3>
+            <h3 className="font-semibold text-base md:text-lg mb-3 md:mb-4">Contactados Recientemente</h3>
 
             {loading ? (
-                <div className="flex justify-center py-8">
-                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+                <div className="flex justify-center py-6 md:py-8">
+                    <div className="animate-spin rounded-full h-6 w-6 md:h-8 md:w-8 border-b-2 border-blue-600"></div>
                 </div>
             ) : leads.length === 0 ? (
-                <div className="text-center py-8 text-gray-500 text-sm">
+                <div className="text-center py-6 md:py-8 text-gray-500 text-sm">
                     No hay leads contactados recientemente.
                 </div>
             ) : (
-                <div className="space-y-3">
-                    {leads.map((lead) => (
-                        <div
-                            key={lead.id}
-                            className="flex items-center justify-between p-3 rounded-lg border bg-gray-50 dark:bg-zinc-800/50 dark:border-zinc-700 hover:bg-gray-100 dark:hover:bg-zinc-800 transition-colors"
-                        >
-                            <div className="flex items-center gap-3">
-                                <div className="p-2 rounded-full bg-white dark:bg-zinc-900 border dark:border-zinc-700 shadow-sm">
-                                    {STATUS_ICONS[lead.status as keyof typeof STATUS_ICONS] || <User className="h-4 w-4 text-gray-400" />}
-                                </div>
-                                <div>
-                                    <Link href={`/leads/${lead.id}`} className="font-medium text-sm hover:underline hover:text-blue-600 block">
+                <div className="space-y-2 md:space-y-3">
+                    {leads.map((lead) => {
+                        const isUrgent = hasUrgency(lead);
+                        return (
+                            <Link
+                                key={lead.id}
+                                href={`/leads/${lead.id}`}
+                                className="flex items-center justify-between p-2 md:p-3 rounded-lg border bg-gray-50 dark:bg-zinc-800/50 dark:border-zinc-700 hover:bg-gray-100 dark:hover:bg-zinc-800 transition-colors"
+                            >
+                                {/* Mobile: Just name + urgency icon */}
+                                <div className="flex items-center gap-2 md:gap-3 flex-1 min-w-0">
+                                    <AlertCircle
+                                        className={`h-4 w-4 flex-shrink-0 ${isUrgent
+                                                ? 'text-red-500'
+                                                : 'text-gray-300 dark:text-gray-600'
+                                            }`}
+                                    />
+                                    <span className="font-medium text-sm truncate">
                                         {lead.name}
-                                    </Link>
+                                    </span>
+                                </div>
+
+                                {/* Desktop: Show additional info */}
+                                <div className="hidden md:block text-right flex-shrink-0">
                                     <p className="text-xs text-gray-500">
-                                        {lead.city || 'Ubicación desconocida'} • {lead.status}
+                                        {lead.city || 'Sin ubicación'}
+                                    </p>
+                                    <p className="text-xs text-gray-400">
+                                        {getTimeSince(lead.lastContactDate)}
                                     </p>
                                 </div>
-                            </div>
-                            <div className="text-right">
-                                <div className="flex items-center justify-end text-xs text-gray-500 mb-1">
-                                    <Clock className="h-3 w-3 mr-1" />
-                                    {getTimeSince(lead.lastContactDate)}
-                                </div>
-                            </div>
-                        </div>
-                    ))}
+                            </Link>
+                        );
+                    })}
 
                     <div className="pt-2 text-center">
                         <Link
                             href="/leads"
                             className="text-xs text-blue-600 hover:text-blue-700 font-medium hover:underline"
                         >
-                            Ver todos los leads →
+                            Ver todos →
                         </Link>
                     </div>
                 </div>

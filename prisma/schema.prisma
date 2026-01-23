@@ -3,7 +3,7 @@ generator client {
 }
 
 datasource db {
-  provider = "postgresql"
+  provider = "sqlite"
   url      = env("DATABASE_URL")
 }
 
@@ -20,6 +20,11 @@ model User {
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
   leads         Lead[]
+  
+  // Notification Preferences
+  emailReminders Boolean @default(true)
+  weeklyReport   Boolean @default(false)
+  leadAlerts     Boolean @default(true)
 }
 
 model Account {

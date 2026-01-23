@@ -23,6 +23,7 @@ export async function GET() {
                 status: true,
                 lastContactDate: true,
                 city: true,
+                urgencyLevel: true,
             },
         });
 
