@@ -179,6 +179,8 @@ export async function PATCH(
                         lead: {
                             ...updatedLead,
                             urgencyLevel: updatedLead.urgencyLevel || undefined,
+                            estimatedCloseDate: updatedLead.estimatedCloseDate?.toISOString(),
+                            nextActionDate: updatedLead.nextActionDate?.toISOString(),
                         },
                         reason: 'El nivel de urgencia ha cambiado a ALTO'
                     });
