@@ -57,7 +57,8 @@ NO pongas credenciales en tu código.
 | `NEXTAUTH_URL` | `https://main.dxxxxx.amplifyapp.com` (Tu URL de amplify) |
 | `RESEND_API_KEY` | `re_123456...` |
 | `EMAIL_FROM` | `noreply@midominio.com` |
-| `GOOGLE_MAPS_API_KEY` | `AIzaSy...` |
+| `EMAIL_FROM` | `noreply@midominio.com` |
+| `NEXT_PUBLIC_GOOGLE_MAPS_API_KEY` | `AIzaSy...` |
 
 **Nota:** Amplify inyectará estas variables de forma segura durante el build y en tiempo de ejecución. Nadie podrá verlas en el repositorio de Git.
 
@@ -89,10 +90,10 @@ NO pongas credenciales en tu código.
     *   Si no has verificado dominio, usa: `onboarding@resend.dev` (solo sirve para enviar al email de tu cuenta de Resend).
     *   Si verificaste dominio: `no-reply@tudominio.com`.
 
-6.  **GOOGLE_MAPS_API_KEY**:
+6.  **NEXT_PUBLIC_GOOGLE_MAPS_API_KEY**:
     *   Ve a [Google Cloud Console](https://console.cloud.google.com/).
     *   Crea un proyecto > APIs & Services > Credentials > Create Credentials > API Key.
-    *   Asegúrate de habilitar **"Places API (New)"** y **"Maps JavaScript API"**.
+    *   Asegúrate de habilitar **"Places API (New)"**, **"Maps JavaScript API"** y **"Geocoding API"**.
 
 ---
 
