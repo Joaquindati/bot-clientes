@@ -4,13 +4,9 @@ frontend:
     preBuild:
       commands:
         - npm ci
-        - npx prisma generate
     build:
       commands:
         - npm run build
-        - cp -r node_modules/.prisma .next/standalone/node_modules/
-        - cp -r node_modules/@prisma .next/standalone/node_modules/
-        - cp -r prisma .next/standalone/
   artifacts:
     baseDirectory: .next
     files:

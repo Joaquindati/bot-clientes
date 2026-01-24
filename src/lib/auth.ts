@@ -13,10 +13,11 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
   pages: {
     signIn: "/login",
   },
+  trustHost: true,
   providers: [
     Google({
-      clientId: process.env.GOOGLE_CLIENT_ID,
-      clientSecret: process.env.GOOGLE_CLIENT_SECRET,
+      clientId: process.env.GOOGLE_CLIENT_ID!,
+      clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
     }),
     Credentials({
       name: "credentials",
@@ -29,29 +30,34 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
           return null;
         }
 
-        const user = await prisma.user.findUnique({
-          where: { email: credentials.email as string },
-        });
+        try {
+          const user = await prisma.user.findUnique({
+            where: { email: credentials.email as string },
+          });
 
-        if (!user || !user.password) {
+          if (!user || !user.password) {
+            return null;
+          }
+
+          const isPasswordValid = await bcrypt.compare(
+            credentials.password as string,
+            user.password
+          );
+
+          if (!isPasswordValid) {
+            return null;
+          }
+
+          return {
+            id: user.id,
+            email: user.email,
+            name: user.name,
+            image: user.image,
+          };
+        } catch (error) {
+          console.error("Auth error:", error);
           return null;
         }
-
-        const isPasswordValid = await bcrypt.compare(
-          credentials.password as string,
-          user.password
-        );
-
-        if (!isPasswordValid) {
-          return null;
-        }
-
-        return {
-          id: user.id,
-          email: user.email,
-          name: user.name,
-          image: user.image,
-        };
       },
     }),
   ],
