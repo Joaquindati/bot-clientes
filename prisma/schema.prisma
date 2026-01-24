@@ -7,24 +7,21 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-// Auth.js models
 model User {
-  id            String    @id @default(cuid())
-  name          String?
-  email         String    @unique
-  emailVerified DateTime?
-  image         String?
-  password      String?
-  accounts      Account[]
-  sessions      Session[]
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @updatedAt
-  leads         Lead[]
-  
-  // Notification Preferences
-  emailReminders Boolean @default(true)
-  weeklyReport   Boolean @default(false)
-  leadAlerts     Boolean @default(true)
+  id             String    @id @default(cuid())
+  name           String?
+  email          String    @unique
+  emailVerified  DateTime?
+  image          String?
+  password       String?
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+  emailReminders Boolean   @default(true)
+  weeklyReport   Boolean   @default(false)
+  leadAlerts     Boolean   @default(true)
+  accounts       Account[]
+  leads          Lead[]
+  sessions       Session[]
 }
 
 model Account {
@@ -50,9 +47,9 @@ model Session {
   sessionToken String   @unique
   userId       String
   expires      DateTime
-  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
 model VerificationToken {
@@ -64,48 +61,39 @@ model VerificationToken {
 }
 
 model Lead {
-  id        String   @id @default(uuid())
-  userId    String
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  place_id  String   @unique
-  name      String
-  address   String
-  rating    Float?
-  phone     String?
-  website   String?
-  city      String?
-  state     String?
-  country   String?
-  keyword   String?
-
-  // Contact Info
-  emails    String // Stored as JSON string or comma separated
-  socials   String // Stored as JSON string
-
-  // Technical Info
-  techStack String? // Stored as JSON array
-  hasSsl    Boolean @default(false)
-
-  // Status
-  status         String   @default("NEW") // NEW, CONTACTED, INTERESTED, CLIENT
-  notes          String?
-  description    String?  // Rich text description field
-  lastContactDate DateTime?
-  economyLevel   Int      @default(0) // 0 = Not set, 1 = $, 2 = $$, 3 = $$$
-
-  // Sales Intelligence Fields
-  decisionMaker           String?   // Nombre del contacto clave
-  decisionMakerRole       String?   // Cargo/rol del tomador de decisión
-  estimatedCloseDate      DateTime? // Fecha estimada de cierre
-  urgencyLevel            String?   // HIGH, MEDIUM, LOW
-  painPoints              String?   // Principales dolores/problemas
-  leadSource              String?   // Google Maps, Referido, LinkedIn, etc.
-  bestContactTime         String?   // Mañana, Tarde, Noche
-  preferredContactChannel String?   // WhatsApp, Email, Llamada
-  employeeCount           String?   // 1-5, 6-20, 21-50, 50+
-  nextAction              String?   // Siguiente paso específico
-  nextActionDate          DateTime? // Fecha de seguimiento
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id                      String    @id @default(uuid())
+  userId                  String
+  place_id                String    @unique
+  name                    String
+  address                 String
+  rating                  Float?
+  phone                   String?
+  website                 String?
+  city                    String?
+  state                   String?
+  country                 String?
+  keyword                 String?
+  emails                  String
+  socials                 String
+  techStack               String?
+  hasSsl                  Boolean   @default(false)
+  status                  String    @default("NEW")
+  notes                   String?
+  description             String?
+  lastContactDate         DateTime?
+  economyLevel            Int       @default(0)
+  decisionMaker           String?
+  decisionMakerRole       String?
+  estimatedCloseDate      DateTime?
+  urgencyLevel            String?
+  painPoints              String?
+  leadSource              String?
+  bestContactTime         String?
+  preferredContactChannel String?
+  employeeCount           String?
+  nextAction              String?
+  nextActionDate          DateTime?
+  createdAt               DateTime  @default(now())
+  updatedAt               DateTime  @updatedAt
+  user                    User      @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
