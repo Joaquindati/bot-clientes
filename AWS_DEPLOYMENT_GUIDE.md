@@ -61,6 +61,39 @@ NO pongas credenciales en tu código.
 
 **Nota:** Amplify inyectará estas variables de forma segura durante el build y en tiempo de ejecución. Nadie podrá verlas en el repositorio de Git.
 
+### 🕵️‍♂️ ¿De dónde saco estos datos?
+
+1.  **DATABASE_URL**:
+    *   **Formato**: `postgresql://[USER]:[PASSWORD]@[ENDPOINT]:5432/[DB_NAME]`
+    *   **USER y PASSWORD**: Los que definiste al crear la base de datos en RDS (Paso 2).
+    *   **ENDPOINT**: Ve a la consola de AWS RDS > Databases > Haz clic en tu base (`bot-clientes-db`) > Copia el valor de **"Endpoint"** en la sección "Connectivity & security".
+    *   **DB_NAME**: Usualmente es `postgres` si no cambiaste nada, o el nombre que hayas puesto en "Initial database name".
+    *   *Ejemplo*: `postgresql://admin_bot:MiClaveSuperSegura123@bot-clientes-db.cx8q92.us-east-1.rds.amazonaws.com:5432/postgres`
+
+2.  **NEXTAUTH_SECRET**:
+    *   Es una clave criptográfica para asegurar las sesiones.
+    *   **Generar**: Abre tu terminal y corre: `openssl rand -base64 32`
+    *   Copia el resultado y pégalo.
+
+3.  **NEXTAUTH_URL**:
+    *   Es la URL raíz de tu sitio desplegado.
+    *   Ve a la consola de Amplify > App settings > General > Copia la **"Production branch URL"** (ej. `https://main.d2x...amplifyapp.com`).
+    *   *Nota*: Si compraste un dominio, usa ese dominio (ej. `https://tudominio.com`).
+
+4.  **RESEND_API_KEY**:
+    *   Ve a [Resend.com](https://resend.com) > API Keys > Create API Key.
+    *   Copia la llave que empieza con `re_`.
+
+5.  **EMAIL_FROM**:
+    *   Debe ser un remitente verificado en Resend.
+    *   Si no has verificado dominio, usa: `onboarding@resend.dev` (solo sirve para enviar al email de tu cuenta de Resend).
+    *   Si verificaste dominio: `no-reply@tudominio.com`.
+
+6.  **GOOGLE_MAPS_API_KEY**:
+    *   Ve a [Google Cloud Console](https://console.cloud.google.com/).
+    *   Crea un proyecto > APIs & Services > Credentials > Create Credentials > API Key.
+    *   Asegúrate de habilitar **"Places API (New)"** y **"Maps JavaScript API"**.
+
 ---
 
 ## 4. Despliegue de Esquema (Schema)
