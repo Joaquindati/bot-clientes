@@ -1,8 +1,15 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/db';
+import { auth } from '@/lib/auth';
 
 export async function GET() {
     try {
+        const session = await auth();
+        if (!session?.user?.id) {
+            return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+        }
+
+        const userId = session.user.id;
         const now = new Date();
         const oneMonthAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
         const oneWeekFromNow = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000);
@@ -10,6 +17,7 @@ export async function GET() {
         // 1. Clientes sin contacto hace más de 1 mes
         const leadsNoContactCount = await prisma.lead.count({
             where: {
+                userId,
                 OR: [
                     { lastContactDate: null },
                     { lastContactDate: { lt: oneMonthAgo } }
@@ -20,6 +28,7 @@ export async function GET() {
         // 2. Clientes con cierre urgente (estimatedCloseDate < 1 semana)
         const urgentCloseCount = await prisma.lead.count({
             where: {
+                userId,
                 estimatedCloseDate: {
                     gte: now,
                     lte: oneWeekFromNow
@@ -29,6 +38,7 @@ export async function GET() {
 
         // 3. Última búsqueda realizada (lead más reciente)
         const lastSearch = await prisma.lead.findFirst({
+            where: { userId },
             orderBy: { createdAt: 'desc' },
             select: {
                 keyword: true,
@@ -40,6 +50,7 @@ export async function GET() {
         // 4. Cliente que requiere más urgencia (urgencyLevel HIGH + próxima acción cercana)
         const mostUrgentLead = await prisma.lead.findFirst({
             where: {
+                userId,
                 urgencyLevel: 'HIGH'
             },
             orderBy: [

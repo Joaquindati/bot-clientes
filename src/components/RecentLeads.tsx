@@ -16,6 +16,7 @@ interface RecentLead {
 export default function RecentLeads() {
     const [leads, setLeads] = useState<RecentLead[]>([]);
     const [loading, setLoading] = useState(true);
+    const [error, setError] = useState<string | null>(null);
 
     useEffect(() => {
         const fetchRecentLeads = async () => {
@@ -24,9 +25,14 @@ export default function RecentLeads() {
                 if (res.ok) {
                     const data = await res.json();
                     setLeads(data);
+                } else if (res.status === 401) {
+                    setError('Sesión expirada. Por favor, inicia sesión nuevamente.');
+                } else {
+                    setError('Error al cargar los leads recientes.');
                 }
             } catch (error) {
                 console.error('Error fetching recent leads:', error);
+                setError('Error de conexión. Intenta nuevamente.');
             } finally {
                 setLoading(false);
             }
@@ -66,6 +72,10 @@ export default function RecentLeads() {
             {loading ? (
                 <div className="flex justify-center py-6 md:py-8">
                     <div className="animate-spin rounded-full h-6 w-6 md:h-8 md:w-8 border-b-2 border-blue-600"></div>
+                </div>
+            ) : error ? (
+                <div className="text-center py-6 md:py-8">
+                    <p className="text-red-500 dark:text-red-400 text-sm">{error}</p>
                 </div>
             ) : leads.length === 0 ? (
                 <div className="text-center py-6 md:py-8 text-gray-500 text-sm">

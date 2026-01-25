@@ -26,15 +26,23 @@ interface DashboardStats {
 export default function Home() {
   const [stats, setStats] = useState<DashboardStats | null>(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchStats = async () => {
       try {
         const res = await fetch('/api/dashboard/stats');
-        const data = await res.json();
-        setStats(data);
+        if (res.ok) {
+          const data = await res.json();
+          setStats(data);
+        } else if (res.status === 401) {
+          setError('Sesión expirada. Por favor, inicia sesión nuevamente.');
+        } else {
+          setError('Error al cargar las estadísticas.');
+        }
       } catch (error) {
         console.error('Error fetching dashboard stats:', error);
+        setError('Error de conexión. Intenta nuevamente.');
       } finally {
         setLoading(false);
       }
@@ -73,6 +81,11 @@ export default function Home() {
         <p className="text-muted-foreground text-gray-500">
           Resumen de actividad y rendimiento de captación.
         </p>
+        {error && (
+          <div className="mt-4 p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg">
+            <p className="text-red-600 dark:text-red-400 text-sm">{error}</p>
+          </div>
+        )}
       </div>
 
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">

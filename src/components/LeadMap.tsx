@@ -56,7 +56,7 @@ export default function LeadMap() {
             const apiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY;
 
             if (!apiKey) {
-                setError('API Key de Google Maps no configurada. Agrega NEXT_PUBLIC_GOOGLE_MAPS_API_KEY a tu .env.local');
+                setError('API Key de Google Maps no configurada. Agrega NEXT_PUBLIC_GOOGLE_MAPS_API_KEY a tu .env');
                 setLoading(false);
                 return;
             }
@@ -164,7 +164,7 @@ export default function LeadMap() {
                 <div className="text-center p-6">
                     <p className="text-red-600 dark:text-red-400 font-medium mb-2">⚠️ {error}</p>
                     <p className="text-xs text-gray-500 dark:text-gray-400">
-                        Configura tu API key en el archivo .env.local
+                        Configura tu API key en el archivo .env
                     </p>
                 </div>
             </div>
