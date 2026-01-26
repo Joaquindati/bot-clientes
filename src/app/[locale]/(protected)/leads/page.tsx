@@ -1,12 +1,13 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { Download, Trash2, MessageCircle, Sparkles, ArrowUpDown, ArrowUp, ArrowDown } from 'lucide-react';
+import { Plus, Trash2, MessageCircle, Sparkles, ArrowUpDown, ArrowUp, ArrowDown } from 'lucide-react';
 import { Lead, getLeads, deleteLead, updateLeadStatus } from '@/lib/storage';
 import { cn } from '@/lib/utils';
 import Link from 'next/link';
 
 import { PitchGenerator } from '@/components/PitchGenerator';
+import AddLeadModal from '@/components/AddLeadModal';
 
 type SortField = 'name' | 'keyword' | 'city' | 'state' | 'country' | 'website' | 'economyLevel' | 'lastContactDate' | 'status';
 type SortDirection = 'asc' | 'desc' | null;
@@ -15,16 +16,18 @@ export default function LeadsPage() {
     const [leads, setLeads] = useState<Lead[]>([]);
     const [sortField, setSortField] = useState<SortField | null>(null);
     const [sortDirection, setSortDirection] = useState<SortDirection>(null);
+    const [isAddModalOpen, setIsAddModalOpen] = useState(false);
+
+    const fetchLeads = async () => {
+        try {
+            const data = await getLeads();
+            setLeads(data);
+        } catch (error) {
+            console.error("Failed to load leads", error);
+        }
+    };
 
     useEffect(() => {
-        const fetchLeads = async () => {
-            try {
-                const data = await getLeads();
-                setLeads(data);
-            } catch (error) {
-                console.error("Failed to load leads", error);
-            }
-        };
         fetchLeads();
     }, []);
 
@@ -116,9 +119,12 @@ export default function LeadsPage() {
                         Gestiona y exporta tus clientes potenciales guardados.
                     </p>
                 </div>
-                <button className="inline-flex items-center justify-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50 focus:outline-none dark:bg-zinc-800 dark:border-zinc-700 dark:text-gray-300 dark:hover:bg-zinc-700">
-                    <Download className="mr-2 h-4 w-4" />
-                    Exportar CSV
+                <button
+                    onClick={() => setIsAddModalOpen(true)}
+                    className="inline-flex items-center justify-center rounded-md bg-blue-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-blue-700 focus:outline-none transition-colors"
+                >
+                    <Plus className="mr-2 h-4 w-4" />
+                    Agregar Lead
                 </button>
             </div>
 
@@ -354,6 +360,12 @@ export default function LeadsPage() {
                     leadCity={selectedLeadForPitch.city || 'Su Ciudad'}
                 />
             )}
+
+            <AddLeadModal
+                isOpen={isAddModalOpen}
+                onClose={() => setIsAddModalOpen(false)}
+                onLeadAdded={fetchLeads}
+            />
         </div>
     );
 }

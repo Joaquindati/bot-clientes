@@ -79,7 +79,7 @@ export async function POST(request: Request) {
             city, state, country, keyword, emails, socials, techStack, hasSsl,
             user_ratings_total, // Added to extract from search results
             // NEW: Additional fields from enhanced Google API
-            economyLevel, description
+            economyLevel, description, notes
         } = body;
 
         // Check if exists
@@ -131,7 +131,8 @@ export async function POST(request: Request) {
             lastContactDate: null,
             // NEW: Save additional fields from Google API
             economyLevel: economyLevel !== undefined && economyLevel !== null ? Number(economyLevel) : 0,
-            description: description ? String(description) : null
+            description: description ? String(description) : null,
+            notes: notes ? String(notes) : null
         };
 
         console.log('[POST /api/leads] Prepared lead data:', JSON.stringify(leadData, null, 2));
