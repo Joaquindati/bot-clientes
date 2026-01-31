@@ -8,7 +8,6 @@ frontend:
       commands:
         - env | grep -E '^(DATABASE_|AUTH_|GOOGLE_|NEXT_PUBLIC_|RESEND_|EMAIL_|CRON_)' >> .env.production
         - npx prisma generate
-        - npx prisma migrate deploy
         - npm run build
   artifacts:
     baseDirectory: .next
