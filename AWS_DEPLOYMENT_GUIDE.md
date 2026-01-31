@@ -50,15 +50,19 @@ NO pongas credenciales en tu código.
 1. Ve a tu App en Amplify -> **Hosting** -> **Environment variables**.
 2. Agrega las siguientes variables (Manage variables):
 
-| Variable | Valor (Ejemplo) |
-|----------|-----------------|
-| `DATABASE_URL` | `postgresql://USUARIO:CONTRASEÑA@ENDPOINT_DE_RDS:5432/postgres` |
-| `NEXTAUTH_SECRET` | (Genera uno nuevo con `openssl rand -base64 32`) |
-| `NEXTAUTH_URL` | `https://main.dxxxxx.amplifyapp.com` (Tu URL de amplify) |
-| `RESEND_API_KEY` | `re_123456...` |
-| `EMAIL_FROM` | `noreply@midominio.com` |
-| `EMAIL_FROM` | `noreply@midominio.com` |
-| `NEXT_PUBLIC_GOOGLE_MAPS_API_KEY` | `AIzaSy...` |
+| Variable | Valor (Ejemplo) | Requerida |
+|----------|-----------------|-----------|
+| `DATABASE_URL` | `postgresql://USUARIO:CONTRASEÑA@ENDPOINT_DE_RDS:5432/postgres` | Sí |
+| `AUTH_SECRET` | (Genera uno nuevo con `openssl rand -base64 32`) | Sí |
+| `AUTH_URL` | `https://main.dxxxxx.amplifyapp.com` (Tu URL de amplify) | Sí |
+| `GOOGLE_CLIENT_ID` | `123456789-abc.apps.googleusercontent.com` | Sí |
+| `GOOGLE_CLIENT_SECRET` | `GOCSPX-...` | Sí |
+| `NEXT_PUBLIC_GOOGLE_MAPS_API_KEY` | `AIzaSy...` | Sí |
+| `NEXT_PUBLIC_APP_URL` | `https://main.dxxxxx.amplifyapp.com` | Sí |
+| `RESEND_API_KEY` | `re_123456...` | Opcional |
+| `EMAIL_FROM` | `noreply@midominio.com` | Opcional |
+| `EMAIL_REPLY_TO` | `soporte@midominio.com` | Opcional |
+| `CRON_SECRET` | (Genera con `openssl rand -base64 32`) | Opcional |
 
 **Nota:** Amplify inyectará estas variables de forma segura durante el build y en tiempo de ejecución. Nadie podrá verlas en el repositorio de Git.
 
@@ -71,15 +75,20 @@ NO pongas credenciales en tu código.
     *   **DB_NAME**: Usualmente es `postgres` si no cambiaste nada, o el nombre que hayas puesto en "Initial database name".
     *   *Ejemplo*: `postgresql://admin_bot:MiClaveSuperSegura123@bot-clientes-db.cx8q92.us-east-1.rds.amazonaws.com:5432/postgres`
 
-2.  **NEXTAUTH_SECRET**:
-    *   Es una clave criptográfica para asegurar las sesiones.
+2.  **AUTH_SECRET**:
+    *   Es una clave criptográfica para asegurar las sesiones (Auth.js v5).
     *   **Generar**: Abre tu terminal y corre: `openssl rand -base64 32`
     *   Copia el resultado y pégalo.
 
-3.  **NEXTAUTH_URL**:
-    *   Es la URL raíz de tu sitio desplegado.
+3.  **AUTH_URL**:
+    *   Es la URL raíz de tu sitio desplegado (Auth.js v5).
     *   Ve a la consola de Amplify > App settings > General > Copia la **"Production branch URL"** (ej. `https://main.d2x...amplifyapp.com`).
     *   *Nota*: Si compraste un dominio, usa ese dominio (ej. `https://tudominio.com`).
+
+4.  **GOOGLE_CLIENT_ID** y **GOOGLE_CLIENT_SECRET**:
+    *   Requeridos para el login con Google OAuth.
+    *   Ve a [Google Cloud Console](https://console.cloud.google.com/) > APIs & Services > Credentials > OAuth 2.0 Client IDs.
+    *   En "Authorized redirect URIs" agrega: `https://TU-DOMINIO/api/auth/callback/google`
 
 4.  **RESEND_API_KEY**:
     *   Ve a [Resend.com](https://resend.com) > API Keys > Create API Key.
@@ -111,10 +120,22 @@ frontend:
         - npm ci
     build:
       commands:
+        - env | grep -E '^(DATABASE_|AUTH_|GOOGLE_|NEXT_PUBLIC_|RESEND_|EMAIL_|CRON_)' >> .env.production
         - npx prisma generate
-        - npx prisma db push --accept-data-loss # Esto aplicará el esquema a la RDS nueva
+        - npx prisma migrate deploy
         - npm run build
+  artifacts:
+    baseDirectory: .next
+    files:
+      - '**/*'
+  cache:
+    paths:
+      - node_modules/**/*
+      - .next/cache/**/*
 ```
-*Nota: `prisma db push` es útil para prototipos. Para producción estricta se usa `prisma migrate deploy`, pero requiere que hayas creado migraciones locales, lo cual es difícil sin conexión a la BD. `db push` es la mejor opción para tu caso.*
+
+**Línea clave:** `env | grep -E ... >> .env.production` — Amplify solo expone las variables de entorno durante el build. Esta línea las persiste en `.env.production` para que Next.js las lea en runtime SSR (Lambda).
+
+*Nota: Se usa `prisma migrate deploy` porque ya existen migraciones en el proyecto. Esto es más seguro que `db push` para producción.*
 
 ¡Listo! Al hacer push a GitHub, Amplify detectará el cambio, usará las variables secretas y desplegará tu app conectada a RDS.
